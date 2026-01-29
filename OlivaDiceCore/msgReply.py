@@ -7046,11 +7046,7 @@ def pluginReply(plugin_event, message):
     message_list = message.split('\f')
     message_list_new = []
     for message_list_this in message_list:
-        tmp_message = message_list_this
-        while len(tmp_message) > messageSplitGate:
-            message_list_new.append(tmp_message[:messageSplitGate])
-            tmp_message = tmp_message[messageSplitGate:]
-        message_list_new.append(tmp_message)
+        message_list_new.extend(splitMessageByGateKeepBracket(message_list_this, messageSplitGate))
     message_list = message_list_new
     count = 1
     flag_need_split = len(message_list) > 1
@@ -7098,11 +7094,7 @@ def pluginSend(plugin_event:OlivOS.API.Event, send_type, target_id, message:str,
     message_list = message.split('\f')
     message_list_new = []
     for message_list_this in message_list:
-        tmp_message = message_list_this
-        while len(tmp_message) > messageSplitGate:
-            message_list_new.append(tmp_message[:messageSplitGate])
-            tmp_message = tmp_message[messageSplitGate:]
-        message_list_new.append(tmp_message)
+        message_list_new.extend(splitMessageByGateKeepBracket(message_list_this, messageSplitGate))
     message_list = message_list_new
     count = 1
     flag_need_split = len(message_list) > 1
@@ -7122,6 +7114,36 @@ def pluginSend(plugin_event:OlivOS.API.Event, send_type, target_id, message:str,
                 time.sleep(messageSplitDelay)
         if not flag_need_split or count > messageSplitPageLimit:
             break
+
+def splitMessageByGateKeepBracket(message:str, gate:int):
+    '''中括号内容不进行分页，且优化了未闭合括号的处理效率'''
+    if message is None:
+        return []
+    if gate is None or gate <= 0:
+        if message == '':
+            return []
+        return [message]
+    res = []
+    start = 0
+    bracket_count = 0
+    remaining_right_brackets = message.count(']')
+    for i, ch in enumerate(message):
+        if ch == '[':
+            bracket_count += 1
+        elif ch == ']':
+            remaining_right_brackets -= 1 
+            if bracket_count > 0:
+                bracket_count -= 1
+        # 如果有非闭合括号就进行长度检查
+        if (i - start + 1) >= gate:
+            if bracket_count == 0 or remaining_right_brackets < bracket_count:
+                res.append(message[start:i + 1])
+                start = i + 1
+                bracket_count = 0
+    if start < len(message):
+        res.append(message[start:])
+    res = [x for x in res if x != '']
+    return res
 
 #阻塞普通消息
 def nativeMsgBlocker(plugin_event, Proc):
