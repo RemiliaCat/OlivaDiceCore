@@ -577,17 +577,16 @@ def getDrawDeck(key_str, bot_hash, count = 1, valDict = None):
     
     if bot_hash in OlivaDiceCore.msgCustom.dictStrCustomDict:
         dictStrCustom = OlivaDiceCore.msgCustom.dictStrCustomDict[bot_hash]
+    if valDict != None and 'dictTValue' in valDict:
+        dictTValue = valDict['dictTValue']
     if redirected_bot_hash in OlivaDiceCore.drawCardData.dictDeck:
         if key_str in OlivaDiceCore.drawCardData.dictDeck[redirected_bot_hash]:
             if count >= 1 and count <= 10:
                 tmp_for_list = range(count)
                 tmp_card_list = []
                 plugin_event = None
-                dictTValue = None
                 if valDict != None and 'dictTValue' in valDict and 'vValDict' in valDict['dictTValue'] and 'vPluginEvent' in valDict['dictTValue']['vValDict']:
                     plugin_event = valDict['dictTValue']['vValDict']['vPluginEvent']
-                if valDict != None and 'dictTValue' in valDict:
-                    dictTValue = valDict['dictTValue']
                 for tmp_for_list_this in tmp_for_list:
                     tmp_draw_str = draw(key_str, bot_hash, mark_dict = None, plugin_event = plugin_event)
                     if tmp_draw_str != None and type(tmp_draw_str) == str:
